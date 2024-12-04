@@ -20,10 +20,10 @@ with tab2:
 with tab3:
     st.header("David's Questions")
 
-with tab1:
+with tab4:
     st.header("Koise's Questions")
 
-with tab1:
+with tab5:
     st.header("Chris's Questions")
 
 #Question -- How do mental health outcomes differ between self-employed individuals and employed individuals in the tech industry?
