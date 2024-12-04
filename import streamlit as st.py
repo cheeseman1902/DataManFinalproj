@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import sqlite3
 
-#data cleaning
 
 st.header("Group 8 Final Project")
 conn = sqlite3.connect("Mental_Health_data.db")
@@ -27,7 +26,7 @@ with tab1:
     st.header("Chris's Questions")
 
 #Question -- How do mental health outcomes differ between self-employed individuals and employed individuals in the tech industry?
-#have seeked treatment for mental health
+# employment status - have seeked treatment for mental health
 query = '''
 SELECT 
 	CASE 
@@ -48,7 +47,7 @@ GROUP BY EmploymentStatus;
 df = pd.read_sql_query(query, conn)
 print(df)
 
-#have not seeked mental health treatment
+# employment status - have not seeked mental health treatment
 query2 = '''
 SELECT 
 	CASE 
@@ -67,9 +66,9 @@ WHERE QuestionID = 5
 GROUP BY EmploymentStatus;
 '''
 df2 = pd.read_sql_query(query2, conn)
-
 print(df2)
 
+# gender -- have seeked help
 query3 = '''
 SELECT
 	CASE
@@ -92,6 +91,7 @@ GROUP BY Gender
 df3 = pd.read_sql_query(query3, conn)
 print(df3)
 
+# gender -- have not seeked help
 query4 = '''
 SELECT
 	CASE
