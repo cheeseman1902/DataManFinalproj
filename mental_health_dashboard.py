@@ -2,7 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import sqlite3
+<<<<<<< Updated upstream:mental_health_dashboard.py
 import plotly.express as px
+=======
+import matplotlib.pyplot as plt
+>>>>>>> Stashed changes:import streamlit as st.py
 
 
 st.header("Group 8 Final Project")
@@ -35,9 +39,94 @@ with tab2:
 with tab3:
     st.header("David's Questions")
 
+<<<<<<< Updated upstream:mental_health_dashboard.py
 with tab4:
     st.header("Koise's Questions")
 
+=======
+with tab4
+    st.header("Koise's Questions")
+
+def load_data():
+    db_path = 'Mental_Health_data.db'
+    conn = sqlite3.connect(db_path)
+
+    query = """
+    SELECT 
+        Answer.SurveyID,
+        Question.questionid AS QuestionID,
+        Question.questiontext
+    FROM 
+        Answer
+    JOIN 
+        Question ON Answer.QuestionID = Question.questionid;
+    """
+    data = pd.read_sql(query, conn)
+    conn.close()
+    return data
+
+# Quantify Trends
+def quantify_trends(data):
+    keywords = ['mental health', 'workplace', 'support', 'challenges', 'attitudes', 'stigma', 'awareness']
+    relevant_data = data[data['questiontext'].str.contains('|'.join(keywords), case=False, na=False)]
+
+    attitudes_data = relevant_data[relevant_data['questiontext'].str.contains('attitudes|workplace|mental health', case=False, na=False)]
+    support_data = relevant_data[relevant_data['questiontext'].str.contains('support|challenges', case=False, na=False)]
+
+    attitudes_trends = attitudes_data.groupby('SurveyID').size().reset_index(name='AttitudeResponses')
+    support_trends = support_data.groupby('SurveyID').size().reset_index(name='SupportResponses')
+
+    trends = pd.merge(attitudes_trends, support_trends, on='SurveyID', how='outer').fillna(0)
+    trends['SurveyID'] = trends['SurveyID'].astype(int)
+    return trends
+
+# Visualization
+def display_dashboard(trends):
+    st.title("Attitudes and Employer Support")
+    st.markdown("""
+    ### Evolution of Mental Health Attitudes and Support Over Time
+    This dashboard visualizes the trends in workplace attitudes toward mental health and the support provided by employers over the years.
+
+    #### Insights:
+    - **How have the attitudes towards mental health in the tech workplace evolved over time?**
+      According to the data, the attitudes toward mental health in the tech workplace spiked in relevance in the year 2016. This suggests an increase in awareness and willingness to discuss mental health openly. After 2016, these attitudes sharply decreased, which suggests either the prioritization of mental health came and went as a fleeting trend, or that employees became satisfied with the employers' increased support concerning mental health. 
+
+    - **How has the relationship between the frequency of challenges and perceived level of support from employers changed over time?**
+      According to the data, the relationship has seemingly improved, as indications point to more employees reporting better support from employers. However, apart from a brief and minimal spike in 2017, employer support has remained largely stagnant. This indicates that other factors may be at play when considering the decrease in employee concerns surrounding mental health.
+    """)
+
+    st.sidebar.header("Filters")
+    selected_years = st.sidebar.multiselect(
+        "Select Survey Years", options=trends['SurveyID'].unique(), default=trends['SurveyID'].unique()
+    )
+
+    filtered_trends = trends[trends['SurveyID'].isin(selected_years)]
+
+    fig, ax = plt.subplots()
+    ax.plot(filtered_trends['SurveyID'], filtered_trends['AttitudeResponses'], marker='o', label="Attitudes")
+    ax.plot(filtered_trends['SurveyID'], filtered_trends['SupportResponses'], marker='o', color='orange', label="Support")
+    ax.set_title("Attitudes vs. Employer Support Over Time")
+    ax.set_xlabel("Year")
+    ax.set_ylabel("Number of Responses")
+    ax.legend()
+    st.pyplot(fig)
+
+    if not filtered_trends.empty:
+        max_attitudes_year = filtered_trends.loc[filtered_trends['AttitudeResponses'].idxmax(), 'SurveyID']
+        max_support_year = filtered_trends.loc[filtered_trends['SupportResponses'].idxmax(), 'SurveyID']
+        st.markdown(f"""
+        - **Year with Most Attitude Responses:** {max_attitudes_year}  
+        - **Year with Most Support Responses:** {max_support_year}  
+        """)
+    else:
+        st.markdown("No data available for the selected filters.")
+
+if __name__ == "__main__":
+    data = load_data()
+    trends = quantify_trends(data)
+    display_dashboard(trends)
+
+>>>>>>> Stashed changes:import streamlit as st.py
 with tab5:
     st.header("Chris's Questions")
 
