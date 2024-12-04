@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import sqlite3
+import plotly.express as px
+
 
 
 st.header("Group 8 Final Project")
@@ -119,3 +121,23 @@ GROUP BY Gender
 df4 = pd.read_sql_query(query4, conn)
 print(df4)
 conn.close()
+
+df['EmploymentStatus'] = df['EmploymentStatus'].astype('string')
+df['Have Sought Mental Health Treatment'] = df['Have Sought Mental Health Treatment'].astype('string')
+print(df.info())
+
+df2['EmploymentStatus'] = df2['EmploymentStatus'].astype('string')
+df2['Have Not Sought Mental Health Treatment'] = df2['Have Not Sought Mental Health Treatment'].astype('string')
+
+basic_bar = px.bar(df, x='EmploymentStatus', y='Have Sought Mental Health Treatment')
+basic_bar2 = px.bar(df2, x='EmploymentStatus', y='Have Not Sought Mental Health Treatment')
+
+col1, col2 = st.columns(2)
+
+with tab5:
+	st.subheader("Question 1")
+	col1, col2 = st.columns(2)
+	with col1:
+		st.plotly_chart(basic_bar)
+	with col2:
+		st.plotly_chart(basic_bar2)
