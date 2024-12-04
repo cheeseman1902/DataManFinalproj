@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import sqlite3
 
+#data cleaning
+
 st.header("Group 8 Final Project")
 conn = sqlite3.connect("Mental_Health_data.db")
 
@@ -23,3 +25,93 @@ with tab1:
 
 with tab1:
     st.header("Chris's Questions")
+
+#Question -- How do mental health outcomes differ between self-employed individuals and employed individuals in the tech industry?
+#have seeked treatment for mental health
+query = '''
+SELECT 
+	CASE 
+		WHEN AnswerText = 1 THEN 'Self-Employed'
+		WHEN AnswerText = 0 THEN 'Employed'
+	END AS EmploymentStatus,
+	COUNT(*) AS 'Have Sought Mental Health Treatment'
+FROM Answer
+WHERE QuestionID = 5
+	AND AnswerText IN (0,1)
+	AND UserID IN (
+    SELECT UserID
+    FROM Answer
+    WHERE QuestionID = 7 AND AnswerText = 1
+  )
+GROUP BY EmploymentStatus;
+'''
+df = pd.read_sql_query(query, conn)
+print(df)
+
+#have not seeked mental health treatment
+query2 = '''
+SELECT 
+	CASE 
+		WHEN AnswerText = 1 THEN 'Self-Employed'
+		WHEN AnswerText = 0 THEN 'Employed'
+	END AS EmploymentStatus,
+	COUNT(*) AS 'Have Not Sought Mental Health Treatment'
+FROM Answer
+WHERE QuestionID = 5
+	AND AnswerText IN (0,1)
+	AND UserID IN (
+    SELECT UserID
+    FROM Answer
+    WHERE QuestionID = 7 AND AnswerText = 0
+  )
+GROUP BY EmploymentStatus;
+'''
+df2 = pd.read_sql_query(query2, conn)
+
+print(df2)
+
+query3 = '''
+SELECT
+	CASE
+		WHEN AnswerText = 'Male'
+			THEN 'Male'
+		WHEN AnswerText = 'Female'
+			THEN 'Female'
+		ELSE
+			'Other'
+	END AS Gender,
+	COUNT(*) AS 'Have Sought Mental Health Treatment'
+FROM Answer
+WHERE questionid = 2 AND UserID IN(
+SELECT UserID
+FROM Answer
+WHERE questionid = 7 AND AnswerText = 1
+)
+GROUP BY Gender
+'''
+df3 = pd.read_sql_query(query3, conn)
+print(df3)
+
+query4 = '''
+SELECT
+	CASE
+		WHEN AnswerText = 'Male'
+			THEN 'Male'
+		WHEN AnswerText = 'Female'
+			THEN 'Female'
+		ELSE
+			'Other'
+	END AS Gender,
+	COUNT(*) AS 'Have Not Sought Mental Health Treatment'
+FROM Answer
+WHERE questionid = 2 AND UserID IN(
+SELECT UserID
+FROM Answer
+WHERE questionid = 7 AND AnswerText = 0
+)
+GROUP BY Gender
+'''
+
+df4 = pd.read_sql_query(query4, conn)
+print(df4)
+conn.close()
