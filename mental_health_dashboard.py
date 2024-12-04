@@ -5,7 +5,6 @@ import sqlite3
 import plotly.express as px
 
 
-
 st.header("Group 8 Final Project")
 conn = sqlite3.connect("Mental_Health_data.db")
 
@@ -17,6 +16,21 @@ with tab1:
 
 with tab2:
     st.header("Mac's Questions")
+    age_query = '''
+	SELECT 
+		AnswerText, 
+		COUNT(AnswerText)
+	FROM 
+		Answer a 
+	WHERE 
+		QuestionID = 1
+	GROUP BY 
+		AnswerText 
+	ORDER BY 
+		COUNT(AnswerText) DESC
+	'''
+    age_df = pd.read_sql_query(age_query, conn)
+    
 
 with tab3:
     st.header("David's Questions")
