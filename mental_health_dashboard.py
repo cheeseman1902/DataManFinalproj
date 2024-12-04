@@ -76,12 +76,14 @@ SELECT
 			THEN 'Male'
 		WHEN AnswerText = 'Female'
 			THEN 'Female'
+        WHEN AnswerText = -1
+			THEN 'NA'
 		ELSE
 			'Other'
 	END AS Gender,
 	COUNT(*) AS 'Have Sought Mental Health Treatment'
 FROM Answer
-WHERE questionid = 2 AND UserID IN(
+WHERE questionid = 2 AND Gender IN ('Male', 'Female', 'Other') AND UserID IN(
 SELECT UserID
 FROM Answer
 WHERE questionid = 7 AND AnswerText = 1
@@ -99,12 +101,14 @@ SELECT
 			THEN 'Male'
 		WHEN AnswerText = 'Female'
 			THEN 'Female'
+        WHEN AnswerText = -1
+			THEN 'NA'
 		ELSE
 			'Other'
 	END AS Gender,
 	COUNT(*) AS 'Have Not Sought Mental Health Treatment'
 FROM Answer
-WHERE questionid = 2 AND UserID IN(
+WHERE questionid = 2 AND Gender IN ('Male', 'Female', 'Other') AND UserID IN(
 SELECT UserID
 FROM Answer
 WHERE questionid = 7 AND AnswerText = 0
