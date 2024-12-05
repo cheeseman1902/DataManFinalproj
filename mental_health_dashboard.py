@@ -90,8 +90,35 @@ with tab2:
 			)
 		'''
 	amount3 = pd.read_sql_query(query32, conn)
-	percentage1 = query30/age_df[30]
+	total_30 = age_df.loc[age_df['AnswerText'] == '30', 'Count'].values[0]
+	yes_30 = amount['Count'].iloc[0]
+	total_29 = age_df.loc[age_df['AnswerText'] == '29', 'Count'].values[0]
+	yes_29 = amount2['Count'].iloc[0]
+	total_32 = age_df.loc[age_df['AnswerText'] == '32', 'Count'].values[0]
+	yes_32 = amount3['Count'].iloc[0]
+	percentage1 = (yes_30/total_30)*100
+	percentage2 = (yes_29/total_29)*100
+	percentage3 = (yes_32/total_32)*100
+	x = ['30', '29','32']
+	y = [percentage1,percentage2,percentage3]
+	data = pd.DataFrame({
+		'Age': x,
+		'Percentage': y
+	})
 
+	# Create the bar chart
+	percentage_chart = px.bar(data, x='Age', y='Percentage', 
+				title='Percentage of People who said they have been diagnosed with a mental health disorder by age',
+				labels={'Percentage': 'Percentage (%)', 'Age': 'Age'},
+				text='Percentage')  # Add text labels to the bars
+
+	# Enhance the chart (optional)
+	percentage_chart.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
+	percentage_chart.update_layout(yaxis=dict(title='Percentage (%)', range=[0, 100]), 
+						xaxis=dict(title='Age'),
+						showlegend=False)
+	st.plotly_chart(percentage_chart)
+	
 with tab3:
     st.header("David's Questions")
     
@@ -166,6 +193,7 @@ with tab3:
     results.columns = ["Answers", "Count"]
     st.subheader("Have you observed or experienced supportive or well handled response to a mental health issue in your current or previous workplace?")
     st.dataframe(results, use_container_width=True)
+	
 
 with tab4:
     st.header("Koise's Questions")
