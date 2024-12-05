@@ -214,7 +214,6 @@ WHERE QuestionID = 5
 GROUP BY EmploymentStatus;
 '''
 df = pd.read_sql_query(query, conn)
-# print(df)
 
 # employment status - have not seeked mental health treatment
 query2 = '''
@@ -235,7 +234,6 @@ WHERE QuestionID = 5
 GROUP BY EmploymentStatus;
 '''
 df2 = pd.read_sql_query(query2, conn)
-# print(df2)
 
 # question - How do the percentages of tech employees who have sought treatment for a mental health condition differ by gender?
 # gender -- have seeked help
@@ -261,7 +259,6 @@ WHERE questionid = 7 AND AnswerText = 1
 GROUP BY Gender
 '''
 df3 = pd.read_sql_query(query3, conn)
-# print(df3)
 
 # gender -- have not seeked help
 query4 = '''
@@ -286,4 +283,28 @@ WHERE questionid = 7 AND AnswerText = 0
 GROUP BY Gender
 '''
 df4 = pd.read_sql_query(query4, conn)
-# print(df4)
+
+#merge employment dataframes to get percentage and data table
+df_employment_combined = pd.merge(df, df2, on='EmploymentStatus')
+df_employment_combined['Total'] = (df_employment_combined['Has Been Diagnosed with a Mental Health Disorder'] + df_employment_combined['Has Not Been Diagnosed with a Mental Health Disorder'])
+df_employment_combined['Percentage Who Have Been Diagnosed'] = (df_employment_combined['Has Been Diagnosed with a Mental Health Disorder'] / df_employment_combined['Total'] * 100)
+#merge gender dataframes to get percentage and data table
+df_gender_combined = pd.merge(df3, df4, on='Gender')
+df_gender_combined['Total'] = (df_gender_combined['Have Sought Mental Health Treatment'] + df_gender_combined['Have Not Sought Mental Health Treatment'])
+df_gender_combined['Percentage Who Have Sought Mental Health Treatment'] = (df_gender_combined['Have Sought Mental Health Treatment'] / df_gender_combined['Total'] * 100)
+with tab5:
+    st.subheader("How do the percentages of tech employees seeking treatment for mental health conditions differ by gender?")
+    st.text("From this chart, there are distinct differences among the gender demographics. Female tech workers reported the highest rate of seeking treatment at 72.9%, followed by those identifying as other at 62.4%, and male tech workers at 51.1%. Among the three genders surveyed—male, female, and other—the percentage of individuals seeking mental health support is notably high. This data backs the commonly told claim that men are less likely to seek treatment for mental health concerns.")
+    selected_gender = st.multiselect("Select Gender to Show", options=df_gender_combined['Gender'].unique(), default=df_gender_combined['Gender'].unique())
+    filtered_gender = df_gender_combined[df_gender_combined['Gender'].isin(selected_gender)]
+    basic_bar_5 = px.bar(filtered_gender, x='Gender', y='Percentage Who Have Sought Mental Health Treatment')
+    st.plotly_chart(basic_bar_5)
+    with st.expander("See Data Table"):
+        st.write(df_gender_combined)
+with tab5:
+     st.subheader("How does the percentage of tech workers diagnosed with a mental health condition differ between employees and the self-employed?")
+     st.text("Observing this chart, there is a negligible difference in the percentages of self-employed and employed tech workers diagnosed with a mental health disorder. Employed individuals show a slightly higher rate at 65.6% compared to 62.5% for the self-employed. Both groups exhibit strikingly high rates of mental health diagnoses.")
+     basic_bar_6 = px.bar(df_employment_combined, x='EmploymentStatus', y='Percentage Who Have Been Diagnosed')
+     st.plotly_chart(basic_bar_6)
+     with st.expander("See Data Table"):
+        st.write(df_employment_combined)
