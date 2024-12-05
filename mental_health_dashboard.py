@@ -15,11 +15,11 @@ with tab1:
     st.header("Julia's Questions")
 
 with tab2:
-    st.header("Mac's Questions")
-    age_query = '''
+	st.header("Mac's Questions")
+	age_query = '''
 	SELECT 
 		AnswerText, 
-		COUNT(AnswerText)
+		COUNT(AnswerText) as Count
 	FROM 
 		Answer a 
 	WHERE 
@@ -28,9 +28,67 @@ with tab2:
 		AnswerText 
 	ORDER BY 
 		COUNT(AnswerText) DESC
+    LIMIT 3
 	'''
-    age_df = pd.read_sql_query(age_query, conn)
-    
+	age_df = pd.read_sql_query(age_query, conn)
+	Count = age_df['Count']
+	chart = px.bar(age_df, x='AnswerText', y='Count')
+	st.plotly_chart(chart)
+	st.caption("Here we can see that the Top 3 ages for those who partook in the survey are 30, 29, and 32.")
+	query30 = '''
+		SELECT 
+			COUNT(a.AnswerText) AS Count
+		FROM 
+			Answer a
+		WHERE 
+			a.QuestionID = 34 
+			AND a.AnswerText = 'Yes' 
+			AND EXISTS (
+				SELECT 1 
+				FROM Answer a2 
+				WHERE a2.QuestionID = 1 
+				AND a2.AnswerText = '30' 
+				AND a2.UserID = a.UserID
+			)
+		'''
+	amount = pd.read_sql_query(query30, conn)
+
+	query29 = '''
+		SELECT 
+			COUNT(a.AnswerText) AS Count
+		FROM 
+			Answer a
+		WHERE 
+			a.QuestionID = 34 
+			AND a.AnswerText = 'Yes' 
+			AND EXISTS (
+				SELECT 1 
+				FROM Answer a2 
+				WHERE a2.QuestionID = 1 
+				AND a2.AnswerText = '29'
+				AND a2.UserID = a.UserID
+			)
+		'''
+	amount2 = pd.read_sql_query(query30, conn)
+
+	query32 = '''
+		SELECT 
+			COUNT(a.AnswerText) AS Count
+		FROM 
+			Answer a
+		WHERE 
+			a.QuestionID = 34 
+			AND a.AnswerText = 'Yes' 
+			AND EXISTS (
+				SELECT 1 
+				FROM Answer a2 
+				WHERE a2.QuestionID = 1 
+				AND a2.AnswerText = '32' 
+				AND a2.UserID = a.UserID
+			)
+		'''
+	amount3 = pd.read_sql_query(query32, conn)
+	percentage1 = query30/age_df[30]
 
 with tab3:
     st.header("David's Questions")
