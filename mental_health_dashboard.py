@@ -170,7 +170,7 @@ with tab3:
 with tab4:
     st.header("Koise's Questions")
 
-        def load_data():
+def load_data():
         db_path = 'Mental_Health_data.db'
         conn = sqlite3.connect(db_path)
 
