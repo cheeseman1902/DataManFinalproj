@@ -5,6 +5,7 @@ import sqlite3
 import plotly.express as px
 import matplotlib.pyplot as plt
 
+
 st.set_page_config(layout="wide")
 st.header("Group 8 Final Project")
 conn = sqlite3.connect("Mental_Health_data.db")
@@ -15,6 +16,188 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(["Julia", "Mac", "David", "Koise", "Chris
 
 with tab1:
     st.header("Julia's Questions")
+
+with tab3:
+    st.title("David's Questions")
+    st.header("Do people with mental health issues prefer working in-office or remote?")
+    col1, col2 = st.columns(2)
+    with col1:
+        davidquery = """
+			SELECT a.AnswerText, COUNT(a.AnswerText)
+			FROM Answer as a
+			LEFT Join Question as q
+			on a.QuestionID = q.questionid
+			WHERE a.QuestionID = 93
+			GROUP BY AnswerText;	
+			"""
+        cursor.execute(davidquery)
+        results = cursor.fetchall()
+        results = pd.DataFrame(results)
+        results.columns = ["Answers", "Count"]
+        st.subheader("Do you work remotely (outside of an office) at least 50% of the time?")
+        st.bar_chart(data=results, x='Answers', y='Count')
+        with st.expander("See Data Table"):
+            st.write(results)
+    with col2:
+        davidquery2 = '''
+			SELECT a.AnswerText, COUNT(a.AnswerText)
+			FROM Answer as a
+			LEFT Join Question as q
+			on a.QuestionID = q.questionid
+			WHERE a.QuestionID = 118
+			GROUP BY AnswerText;	
+			'''
+        cursor.execute(davidquery2)
+        results = cursor.fetchall()
+        results = pd.DataFrame(results)
+        results.columns = ["Answers", "Count"]
+        st.subheader("Do you work remotely?")
+        st.bar_chart(data=results, x='Answers', y='Count')
+        with st.expander("See Data Table"):
+            st.write(results)
+    st.text('The graphs show that while most responders to the survey do not work remote the majority of the time, the majority of them work remote sometimes. This can perhaps be attributed to the shift in work environments following the pandemic, where many people transitioned to hybrid-style work patterns.')
+    st.header('Have more positive or negative discussions surrounding mental health in the workplace been observed?')
+    ncol1, ncol2, ncol3 = st.columns(3)
+    st.text('The graphs show that survey responders have observed and experienced more negative workplace responses to mental health issues than positive ones. Notably, more than twice as many responders answered "no" or "not sure" to seeing negative responses than positive ones, which could suggest that a negative response can be more subtle or unnoticable than the alternative.')
+    with ncol1:
+        davidquery3 = '''
+			SELECT a.AnswerText, COUNT(a.AnswerText)
+			FROM Answer as a
+			LEFT Join Question as q
+			on a.QuestionID = q.questionid
+			WHERE a.QuestionID = 31
+			GROUP BY AnswerText;	
+			'''
+        cursor.execute(davidquery3)
+        results = cursor.fetchall()
+        results = pd.DataFrame(results)[1:4]
+        results.columns = ["Answers", "Count"]
+        st.subheader("Have your observations of how another individual who discussed a mental health disorder made you less likely to reveal a mental health issue yourself in your current workplace?")
+        fig = px.pie(results, values='Count', names='Answers', title = 'Less Likely to Report Mental Health Issues?')
+        st.plotly_chart(fig)
+        with st.expander("See Data Table"):
+            st.write(results)        
+    with ncol2:
+        davidquery4 = '''
+			SELECT a.AnswerText, COUNT(a.AnswerText)
+			FROM Answer as a
+			LEFT Join Question as q
+			on a.QuestionID = q.questionid
+			WHERE a.QuestionID = 56
+			GROUP BY AnswerText;	
+			'''
+        cursor.execute(davidquery4)
+        results = cursor.fetchall()
+        results = pd.DataFrame(results)[1:6]
+        results.columns = ["Answers", "Count"]
+        st.subheader("Have you observed or experienced an unsupportive or badly handled response to a mental health issue in your current or previous workplace?")
+        fig2 = px.pie(results, values='Count', names='Answers', title = 'Observed Negative Responses?')
+        st.plotly_chart(fig2)
+        with st.expander("See Data Table"):
+            st.write(results)
+    with ncol3:
+        davidquery5 = '''
+			SELECT a.AnswerText, COUNT(a.AnswerText)
+			FROM Answer as a
+			LEFT Join Question as q
+			on a.QuestionID = q.questionid
+			WHERE a.QuestionID = 83
+			GROUP BY AnswerText;
+			'''
+        cursor.execute(davidquery5)
+        results = cursor.fetchall()
+        results = pd.DataFrame(results)[1:6]
+        results.columns = ["Answers", "Count"]
+        st.subheader("Have you observed or experienced supportive or well handled response to a mental health issue in your current or previous workplace?")
+	
+        fig3 = px.pie(results, values='Count', names='Answers', title = 'Observed Positive Responses?')
+        st.plotly_chart(fig3)
+        with st.expander("See Data Table"):
+            st.write(results)
+with tab4:
+    st.header("Koise's Questions")
+
+    def load_data():
+        db_path = 'Mental_Health_data.db'
+        conn = sqlite3.connect(db_path)
+
+        query = """
+        SELECT 
+            Answer.SurveyID,
+            Question.questionid AS QuestionID,
+            Question.questiontext
+        FROM 
+            Answer
+        JOIN 
+            Question ON Answer.QuestionID = Question.questionid;
+        """
+        data = pd.read_sql(query, conn)
+        conn.close()
+        return data
+
+    # Quantify Trends
+    def quantify_trends(data):
+        keywords = ['mental health', 'workplace', 'support', 'challenges', 'attitudes', 'stigma', 'awareness']
+        relevant_data = data[data['questiontext'].str.contains('|'.join(keywords), case=False, na=False)]
+
+        attitudes_data = relevant_data[relevant_data['questiontext'].str.contains('attitudes|workplace|mental health', case=False, na=False)]
+        support_data = relevant_data[relevant_data['questiontext'].str.contains('support|challenges', case=False, na=False)]
+
+        attitudes_trends = attitudes_data.groupby('SurveyID').size().reset_index(name='AttitudeResponses')
+        support_trends = support_data.groupby('SurveyID').size().reset_index(name='SupportResponses')
+
+        trends = pd.merge(attitudes_trends, support_trends, on='SurveyID', how='outer').fillna(0)
+        trends['SurveyID'] = trends['SurveyID'].astype(int)
+        return trends
+
+    # Visualization
+    def display_dashboard(trends):
+        st.title("Attitudes and Employer Support")
+        st.markdown("""
+        ### Evolution of Mental Health Attitudes and Support Over Time
+        This dashboard visualizes the trends in workplace attitudes toward mental health and the support provided by employers over the years.
+
+        #### Insights:
+        - **How have the attitudes towards mental health in the tech workplace evolved over time?**
+        According to the data, the attitudes toward mental health in the tech workplace spiked in relevance in the year 2016. This suggests an increase in awareness and willingness to discuss mental health openly. After 2016, these attitudes sharply decreased, which suggests either the prioritization of mental health came and went as a fleeting trend, or that employees became satisfied with the employers' increased support concerning mental health. 
+
+        - **How has the relationship between the frequency of challenges and perceived level of support from employers changed over time?**
+        According to the data, the relationship has seemingly improved, as indications point to more employees reporting better support from employers. However, apart from a brief and minimal spike in 2017, employer support has remained largely stagnant. This indicates that other factors may be at play when considering the decrease in employee concerns surrounding mental health.
+        """)
+
+        st.header("Filters")
+        selected_years = st.multiselect(
+            "Select Survey Years", options=trends['SurveyID'].unique(), default=trends['SurveyID'].unique()
+        )
+
+        filtered_trends = trends[trends['SurveyID'].isin(selected_years)]
+
+        fig, ax = plt.subplots()
+        ax.plot(filtered_trends['SurveyID'], filtered_trends['AttitudeResponses'], marker='o', label="Attitudes")
+        ax.plot(filtered_trends['SurveyID'], filtered_trends['SupportResponses'], marker='o', color='orange', label="Support")
+        ax.set_title("Attitudes vs. Employer Support Over Time")
+        ax.set_xlabel("Year")
+        ax.set_ylabel("Number of Responses")
+        ax.legend()
+        st.pyplot(fig)
+
+        if not filtered_trends.empty:
+            max_attitudes_year = filtered_trends.loc[filtered_trends['AttitudeResponses'].idxmax(), 'SurveyID']
+            max_support_year = filtered_trends.loc[filtered_trends['SupportResponses'].idxmax(), 'SurveyID']
+            st.markdown(f"""
+            - **Year with Most Attitude Responses:** {max_attitudes_year}  
+            - **Year with Most Support Responses:** {max_support_year}  
+            """)
+        else:
+            st.markdown("No data available for the selected filters.")
+
+    if __name__ == "__main__":
+        data = load_data()
+        trends = quantify_trends(data)
+        display_dashboard(trends)
+
+with tab5:
+    st.header("Chris's Questions")
 
 with tab2:
 	st.header("Mac's Questions")
@@ -122,167 +305,6 @@ with tab2:
 						showlegend=False)
 	st.plotly_chart(percentage_chart)
 	
-with tab3:
-    st.header("David's Questions")
-    
-    davidquery = """
-		SELECT a.AnswerText, COUNT(a.AnswerText)
-		FROM Answer as a
-		LEFT Join Question as q
-		on a.QuestionID = q.questionid
-		WHERE a.QuestionID = 93
-		GROUP BY AnswerText;	
-		"""
-    cursor.execute(davidquery)
-    results = cursor.fetchall()
-    results = pd.DataFrame(results)
-    results.columns = ["Answers", "Count"]
-    st.subheader("Do you work remotely (outside of an office) at least 50% of the time?")
-    st.dataframe(results, use_container_width=True)
-    davidquery2 = '''
-			SELECT a.AnswerText, COUNT(a.AnswerText)
-			FROM Answer as a
-			LEFT Join Question as q
-			on a.QuestionID = q.questionid
-			WHERE a.QuestionID = 118
-			GROUP BY AnswerText;	
-			'''
-    cursor.execute(davidquery2)
-    results = cursor.fetchall()
-    results = pd.DataFrame(results)
-    results.columns = ["Answers", "Count"]
-    st.subheader("Do you work remotely?")
-    st.dataframe(results, use_container_width=True) 
-    davidquery3 = '''
-		SELECT a.AnswerText, COUNT(a.AnswerText)
-		FROM Answer as a
-		LEFT Join Question as q
-		on a.QuestionID = q.questionid
-		WHERE a.QuestionID = 31
-		GROUP BY AnswerText;	
-		'''
-    cursor.execute(davidquery3)
-    results = cursor.fetchall()
-    results = pd.DataFrame(results)
-    results.drop([0])
-    results.columns = ["Answers", "Count"]
-    st.subheader("Have your observations of how another individual who discussed a mental health disorder made you less likely to reveal a mental health issue yourself in your current workplace?")
-    st.dataframe(results, use_container_width=True) 
-    davidquery4 = '''
-		SELECT a.AnswerText, COUNT(a.AnswerText)
-		FROM Answer as a
-		LEFT Join Question as q
-		on a.QuestionID = q.questionid
-		WHERE a.QuestionID = 56
-		GROUP BY AnswerText;	
-		'''
-    cursor.execute(davidquery2)
-    results = cursor.fetchall()
-    results = pd.DataFrame(results)
-    results.columns = ["Answers", "Count"]
-    st.subheader("Have you observed or experienced an unsupportive or badly handled response to a mental health issue in your current or previous workplace?")
-    st.dataframe(results, use_container_width=True) 
-    davidquery5 = '''
-		SELECT a.AnswerText, COUNT(a.AnswerText)
-		FROM Answer as a
-		LEFT Join Question as q
-		on a.QuestionID = q.questionid
-		WHERE a.QuestionID = 83
-		GROUP BY AnswerText;
-		'''
-    cursor.execute(davidquery2)
-    results = cursor.fetchall()
-    results = pd.DataFrame(results)
-    results.columns = ["Answers", "Count"]
-    st.subheader("Have you observed or experienced supportive or well handled response to a mental health issue in your current or previous workplace?")
-    st.dataframe(results, use_container_width=True)
-	
-
-with tab4:
-    st.header("Koise's Questions")
-
-    def load_data():
-        db_path = 'Mental_Health_data.db'
-        conn = sqlite3.connect(db_path)
-
-        query = """
-        SELECT 
-            Answer.SurveyID,
-            Question.questionid AS QuestionID,
-            Question.questiontext
-        FROM 
-            Answer
-        JOIN 
-            Question ON Answer.QuestionID = Question.questionid;
-        """
-        data = pd.read_sql(query, conn)
-        conn.close()
-        return data
-
-    # Quantify Trends
-    def quantify_trends(data):
-        keywords = ['mental health', 'workplace', 'support', 'challenges', 'attitudes', 'stigma', 'awareness']
-        relevant_data = data[data['questiontext'].str.contains('|'.join(keywords), case=False, na=False)]
-
-        attitudes_data = relevant_data[relevant_data['questiontext'].str.contains('attitudes|workplace|mental health', case=False, na=False)]
-        support_data = relevant_data[relevant_data['questiontext'].str.contains('support|challenges', case=False, na=False)]
-
-        attitudes_trends = attitudes_data.groupby('SurveyID').size().reset_index(name='AttitudeResponses')
-        support_trends = support_data.groupby('SurveyID').size().reset_index(name='SupportResponses')
-
-        trends = pd.merge(attitudes_trends, support_trends, on='SurveyID', how='outer').fillna(0)
-        trends['SurveyID'] = trends['SurveyID'].astype(int)
-        return trends
-
-    # Visualization
-    def display_dashboard(trends):
-        st.title("Attitudes and Employer Support")
-        st.markdown("""
-        ### Evolution of Mental Health Attitudes and Support Over Time
-        This dashboard visualizes the trends in workplace attitudes toward mental health and the support provided by employers over the years.
-
-        #### Insights:
-        - **How have the attitudes towards mental health in the tech workplace evolved over time?**
-        According to the data, the attitudes toward mental health in the tech workplace spiked in relevance in the year 2016. This suggests an increase in awareness and willingness to discuss mental health openly. After 2016, these attitudes sharply decreased, which suggests either the prioritization of mental health came and went as a fleeting trend, or that employees became satisfied with the employers' increased support concerning mental health. 
-
-        - **How has the relationship between the frequency of challenges and perceived level of support from employers changed over time?**
-        According to the data, the relationship has seemingly improved, as indications point to more employees reporting better support from employers. However, apart from a brief and minimal spike in 2017, employer support has remained largely stagnant. This indicates that other factors may be at play when considering the decrease in employee concerns surrounding mental health.
-        """)
-
-        st.header("Filters")
-        selected_years = st.multiselect(
-            "Select Survey Years", options=trends['SurveyID'].unique(), default=trends['SurveyID'].unique()
-        )
-
-        filtered_trends = trends[trends['SurveyID'].isin(selected_years)]
-
-        fig, ax = plt.subplots()
-        ax.plot(filtered_trends['SurveyID'], filtered_trends['AttitudeResponses'], marker='o', label="Attitudes")
-        ax.plot(filtered_trends['SurveyID'], filtered_trends['SupportResponses'], marker='o', color='orange', label="Support")
-        ax.set_title("Attitudes vs. Employer Support Over Time")
-        ax.set_xlabel("Year")
-        ax.set_ylabel("Number of Responses")
-        ax.legend()
-        st.pyplot(fig)
-
-        if not filtered_trends.empty:
-            max_attitudes_year = filtered_trends.loc[filtered_trends['AttitudeResponses'].idxmax(), 'SurveyID']
-            max_support_year = filtered_trends.loc[filtered_trends['SupportResponses'].idxmax(), 'SurveyID']
-            st.markdown(f"""
-            - **Year with Most Attitude Responses:** {max_attitudes_year}  
-            - **Year with Most Support Responses:** {max_support_year}  
-            """)
-        else:
-            st.markdown("No data available for the selected filters.")
-
-    if __name__ == "__main__":
-        data = load_data()
-        trends = quantify_trends(data)
-        display_dashboard(trends)
-
-with tab5:
-    st.header("Chris's Questions")
-
 # question -- How does the percentage of tech workers diagnosed with a mental health condition differ between employees and the self-employed?
 # employment status - have seeked treatment for mental health
 query = '''
