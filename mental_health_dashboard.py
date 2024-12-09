@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 
 
 st.set_page_config(layout="wide")
-st.header("Group 8 Final Project")
+st.title("Group 8 Final Project")
 conn = sqlite3.connect("Mental_Health_data.db")
 cursor = conn.cursor()
 
-st.subheader('Tabbed Questions by person')
+st.header('Tabbed Questions by person')
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["Julia", "David", "Koise", "Chris", "Mac"])
 
 with tab1:
@@ -228,8 +228,8 @@ with tab1:
     )
 
 with tab2:
-    st.title("David's Questions")
-    st.header("Do people with mental health issues prefer working in-office or remote?")
+    st.header("David's Questions")
+    st.subheader("Do people with mental health issues prefer working in-office or remote?")
     col1, col2 = st.columns(2)
     with col1:
         davidquery = """
@@ -266,7 +266,7 @@ with tab2:
         with st.expander("See Data Table"):
             st.write(results)
     st.text('The graphs show that while most responders to the survey do not work remote the majority of the time, the majority of them work remote sometimes. This can perhaps be attributed to the shift in work environments following the pandemic, where many people transitioned to hybrid-style work patterns.')
-    st.header('Have more positive or negative discussions surrounding mental health in the workplace been observed?')
+    st.subheader('Have more positive or negative discussions surrounding mental health in the workplace been observed?')
     ncol1, ncol2, ncol3 = st.columns(3)
     st.text('The graphs show that survey responders have observed and experienced more negative workplace responses to mental health issues than positive ones. Notably, more than twice as many responders answered "no" or "not sure" to seeing negative responses than positive ones, which could suggest that a negative response can be more subtle or unnoticable than the alternative.')
     with ncol1:
